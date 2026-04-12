@@ -1,0 +1,225 @@
+Map Implementation Details
+==========================
+
+Overview
+--------
+This document describes the full implementation of the homepage "Export Regions" world map section.
+It covers:
+- Data source and map library strategy
+- Rendering approach
+- Country highlighting logic
+- Desktop/mobile interactions
+- Styling and theme tokens
+- File-by-file responsibilities
+- Production/deployment notes
+
+
+1. What We Use (Library + Dataset)
+----------------------------------
+Primary map source:
+- `@svg-maps/world` dataset (country-level world map geometry)
+
+Current integration model:
+- The dataset is vendored locally as:
+  - `src/assets/world-map-data.js`
+- This file exports world map metadata and path geometry:
+  - `viewBox`
+  - `locations[]` with `id`, `name`, `path`
+
+Important note:
+- We are using the official `@svg-maps/world` map data format, but due install/network restrictions in this environment, the dataset is stored locally instead of imported from npm at runtime.
+- Runtime does NOT depend on any external API or CDN for map rendering.
+
+Why this is lightweight and production-safe:
+- Pure SVG paths rendered in React
+- No Google Maps, Leaflet, WebGL, or tile engines
+- No paid API calls
+- No runtime network dependency for map asset
+
+
+2. Map Rendering Architecture
+-----------------------------
+Main component:
+- `src/components/home/export-regions/ExportMap.jsx`
+
+How rendering works:
+1. Import local world map dataset from `src/assets/world-map-data.js`.
+2. Normalize each country id to uppercase ISO-2 (e.g., `in` -> `IN`).
+3. Build an in-memory `countries` array of:
+   - `code` (ISO-2)
+   - `d` (SVG path)
+4. Render a single `<svg>` with one `<path>` per country.
+5. Apply fill/stroke dynamically based on whether country is served.
+
+SVG setup:
+- `viewBox` comes from dataset (`worldMapData.viewBox`)
+- `preserveAspectRatio="xMidYMid meet"` keeps geographic aspect ratio stable
+- Map scales responsively through `w-full h-auto`
+
+
+3. Country Highlighting Logic
+-----------------------------
+Served data source:
+- `src/constants/servedRegions.js`
+
+Current static shape (temporary by scope):
+- `{ [ISO2]: string[] }`
+- Example:
+  - `IN: ["Gujarat", "Maharashtra", "Delhi"]`
+  - `US: ["California", "Texas"]`
+  - `DE: ["Bavaria", "Berlin"]`
+
+Matching logic:
+- Build `servedSet` from `Object.keys(servedRegions)`
+- For each rendered country path:
+  - `isServed = servedSet.has(country.code)`
+
+Color rules:
+- Served country fill: `var(--color-accent)`
+- Non-served fill: `var(--color-export-country-muted)`
+- Active/hover stroke becomes stronger and brighter
+
+
+4. Interaction Model
+--------------------
+4.1 Desktop behavior
+- Hover on served country:
+  - sets `activeCountry`
+  - computes tooltip coordinates relative to map container
+  - shows `MapTooltip` with country name + regions list
+- Mouse move updates tooltip position smoothly
+- Mouse leave clears active state and hides tooltip
+
+4.2 Mobile behavior
+- Mobile detection via media query:
+  - `(hover: none), (pointer: coarse)`
+- Tap on served country opens `MobileRegionModal`
+- Modal content:
+  - country name
+  - bullet list of served states/regions
+- Overlay/close button dismisses modal
+
+4.3 Keyboard accessibility
+- Served countries are keyboard-focusable (`tabIndex=0`)
+- Enter/Space triggers selection same as click
+- Non-served countries are non-interactive (`tabIndex=-1`)
+
+
+5. Tooltip and Modal Components
+-------------------------------
+Tooltip component:
+- `src/components/home/export-regions/MapTooltip.jsx`
+- Responsibility:
+  - presentation-only floating card
+  - receives `countryName`, `regions`, `position`
+- Styling:
+  - dark blue surface
+  - white text
+  - rounded corners
+  - subtle shadow
+  - fade animation
+
+Mobile modal component:
+- `src/components/home/export-regions/MobileRegionModal.jsx`
+- Responsibility:
+  - presentation-only bottom-sheet/modal for mobile tap flow
+  - receives `isOpen`, `countryName`, `regions`, `onClose`
+
+
+6. Home Section Integration
+---------------------------
+Homepage section file:
+- `src/components/home/ExportExperience.jsx`
+
+Integration details:
+- Imports static served data from `src/constants/servedRegions.js`
+- Renders section heading/subtitle and map card
+- Uses:
+  - `<ExportMap servedRegions={servedRegions} />`
+
+Additional list/cards section:
+- Uses `buildServedCountryList()` to render country-wise region chips
+- Country name conversion handled by `getCountryNameFromCode()`
+
+
+7. Theme Tokens and Styling
+---------------------------
+Theme token definitions in:
+- `src/index.css`
+
+Map-specific tokens:
+- `--color-export-map-start`
+- `--color-export-map-end`
+- `--color-export-country-muted`
+- `--color-export-tooltip-bg`
+
+Usage:
+- Container uses a dark blue gradient background (theme token based)
+- Country colors and tooltip background use CSS variables (no hardcoded values in map logic)
+- Transitions are applied via Tailwind utilities and inline style props where dynamic
+
+
+8. File-by-File Responsibility
+------------------------------
+`src/assets/world-map-data.js`
+- Real world country geometry data (from `@svg-maps/world` format)
+
+`src/constants/servedRegions.js`
+- Temporary static served regions
+- Country name utilities
+- Data normalization helper for country list rendering
+
+`src/components/home/export-regions/ExportMap.jsx`
+- Core map renderer
+- Country path rendering
+- Hover/tap state handling
+- Tooltip position logic
+- Desktop/mobile branching
+- Legend rendering
+
+`src/components/home/export-regions/MapTooltip.jsx`
+- Desktop tooltip UI
+
+`src/components/home/export-regions/MobileRegionModal.jsx`
+- Mobile modal UI
+
+`src/components/home/ExportExperience.jsx`
+- Section composition + integration into homepage flow
+
+`src/index.css`
+- Global design tokens used by map UI
+
+
+9. Performance Notes
+--------------------
+- No runtime fetch for map geometry
+- Country path normalization is memoized
+- Served country set is memoized
+- Interaction updates are localized to active country + tooltip position
+
+
+10. Future API Integration Path
+-------------------------------
+Current scope is static data only.
+For backend integration later:
+1. Replace static `servedRegions` with API data in parent section/hook.
+2. Keep data contract as `{ [ISO2]: string[] }`.
+3. Pass API object unchanged into `ExportMap`.
+4. Keep tooltip/modal/map rendering code unchanged.
+
+If backend returns rows (country/state pairs), use an adapter:
+- Input: `[ { country: "IN", state: "Gujarat" }, ... ]`
+- Output: `{ IN: ["Gujarat", ...] }`
+
+
+11. Production Readiness Notes (Map Scope)
+------------------------------------------
+Map implementation is production-grade because:
+- Uses real country geometry
+- Has responsive, accessible interactions
+- Uses theme tokens
+- Avoids heavy map engines and external runtime dependencies
+
+Global deployment caveat:
+- Entire app deployment still depends on fixing unrelated repo/build environment issues (Tailwind oxide/lightningcss in current setup).
+

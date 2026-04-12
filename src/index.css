@@ -1,0 +1,244 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #203657;
+  --color-secondary: #495c78;
+  --color-accent: #e07001;
+  --color-brass: #b37635;
+  --color-muted-blue: #718299;
+  --color-slate-light: #a5afbd;
+  --color-sand: #f2cc9d;
+  --color-royal: #2d5994;
+  --color-olive: #826f44;
+  --color-brand-blue: #1b365d;
+  --color-export-map-start: #0f2a44;
+  --color-export-map-end: #1e4b7a;
+  --color-export-country-muted: #2a3f5f;
+  --color-export-tooltip-bg: #1e3a5f;
+
+  --color-background: #ffffff;
+  --color-foreground: #1a2332;
+
+  --font-family-display: "Inter", sans-serif;
+  --font-family-body: "Inter", sans-serif;
+}
+
+@utility hero-gradient {
+  background: linear-gradient(
+    135deg,
+    #5f7896 0%,
+    #4a6484 40%,
+    #2e4a6b 75%,
+    #243b55 100%
+  );
+}
+
+@utility hero-inner-shadow {
+  box-shadow:
+    inset 0 80px 100px rgba(0, 0, 0, 0.15),
+    inset 0 -80px 100px rgba(0, 0, 0, 0.25);
+}
+
+@utility card-gradient {
+  background-image: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(255, 255, 255, 0.05) 100%
+  );
+}
+
+@utility home-hero-bg-premium {
+  background:
+    radial-gradient(
+      circle at 85% 85%,
+      rgba(59, 130, 246, 0.35),
+      transparent 40%
+    ),
+    linear-gradient(45deg, #10223b, #1d4a86, #2a6ed1);
+  box-shadow:
+    inset 0 120px 120px rgba(0, 0, 0, 0.25),
+    inset 0 -120px 120px rgba(0, 0, 0, 0.15);
+}
+
+@layer base {
+  body {
+    font-family: var(--font-family-body);
+  }
+}
+
+@layer utilities {
+  .animate-fade-in-up {
+    animation: fade-in-up 0.8s ease-out forwards;
+  }
+  .animate-fade-in-right {
+    animation: fade-in-right 0.8s ease-out forwards;
+  }
+  .animate-slide-in-left {
+    animation: slide-in-left 0.8s ease-out forwards;
+  }
+  .animate-slide-in-right {
+    animation: slide-in-right 0.8s ease-out forwards;
+  }
+  .animate-fade-in {
+    animation: fade-in 0.5s ease-out forwards;
+  }
+  .animate-grow-horizontal {
+    animation: grow-horizontal 0.5s ease-out forwards;
+  }
+
+  .reveal-hidden {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform, opacity;
+  }
+
+  .reveal-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
+  .outline-text {
+    -webkit-text-stroke: 1px rgba(255, 255, 255, 0.1);
+    color: transparent;
+  }
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slide-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes grow-horizontal {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.text-glow {
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Custom Scrollbar */
+/* Removed custom scrollbar to prevent interference with ScrollSmoother */
+
+/* Root styles moved to the bottom for higher specificity and consistency */
+
+/* Hide Google Translate attribution and banner */
+.goog-te-banner-frame.skiptranslate, 
+.goog-te-gadget-icon,
+.goog-te-gadget-simple img,
+.goog-te-menu-value span:nth-child(2),
+.goog-te-menu-value span:nth-child(3),
+.goog-te-menu-value span:nth-child(5),
+.goog-te-gadget span {
+  display: none !important;
+}
+
+.goog-te-gadget-simple {
+  background-color: transparent !important;
+  border: none !important;
+  font-size: inherit !important;
+  padding: 0 !important;
+}
+
+#goog-gt-tt, .goog-te-balloon-frame {
+  display: none !important;
+}
+
+.goog-text-highlight {
+  background: none !important;
+  box-shadow: none !important;
+}
+
+body > .skiptranslate {
+  display: none !important;
+}
+
+/* GSAP ScrollSmoother Core Styles & Scrollbar Suppression */
+/* This block is essential for preventing the 'black border' artifacts during scroll */
+html, body {
+  background-color: #ffffff !important;
+  font-family: var(--font-family-body);
+  overflow-x: hidden !important;
+  top: 0 !important;
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100vw;
+  -ms-overflow-style: none !important; /* IE and Edge */
+  scrollbar-width: none !important; /* Firefox */
+}
+
+/* Chrome, Safari and Opera */
+*::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+#smooth-wrapper {
+  overflow: hidden !important;
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100vw !important;
+  background-color: #ffffff !important;
+  z-index: 1;
+}
+
+#smooth-content {
+  overflow: visible !important;
+  width: 100% !important;
+  min-height: 100vh;
+  background-color: transparent !important;
+}

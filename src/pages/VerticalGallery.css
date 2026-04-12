@@ -1,0 +1,187 @@
+.vertical-accordion-section {
+    position: relative;
+    width: 100%;
+    height: 100vh; /* Fixed viewport height for the sticky frame */
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* Balanced vertical centering */
+    align-items: center;
+    background: #000;
+}
+
+.swiper-viewport {
+    width: 100%;
+    height: 65vh; /* Adjusted to balance with header text */
+}
+
+.mySwiper {
+    width: 100%;
+    height: 100%;
+}
+
+.swiper-slide {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #000;
+}
+
+.gallery-container {
+    width: 90%;
+    max-width: 1200px;
+    height: 50vh; /* Perfectly balanced for 100vh centering */
+}
+
+.gallery-wrap {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    gap: 12px;
+    height: 100%;
+}
+
+.gallery-item {
+    flex: 1;
+    height: 100%;
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+    transition: all 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+    position: relative;
+    border-radius: 20px;
+    overflow: hidden;
+    filter: brightness(0.7) grayscale(0.4);
+    cursor: pointer;
+}
+
+.gallery-item:hover {
+    flex: 7;
+    filter: brightness(1) grayscale(0);
+}
+
+.item-overlay {
+    position: absolute;
+    bottom: 30px;
+    left: 30px;
+    opacity: 0;
+    transition: 0.4s ease;
+}
+
+.gallery-item:hover .item-overlay {
+    opacity: 1;
+}
+
+.item-number {
+    font-family: monospace;
+    font-size: 14px;
+    color: #fff;
+    background: #0066ff;
+    padding: 8px 16px;
+    border-radius: 40px;
+}
+
+/* Effect Specifics */
+
+/* General gallery styles remain same */
+.gallery-item:hover {
+    flex: 7;
+    filter: brightness(1) grayscale(0);
+}
+
+/* 
+   Only apply complex hover expansions and effects on desktop 
+   to maintain performance and UX on touch devices.
+*/
+@media (min-width: 1025px) {
+    .wrap-effect-1 .gallery-item:hover { flex: 7; }
+
+    .wrap-effect-2 .gallery-item:hover {
+        flex: 7;
+        transform: translate3d(0, 0, 100px) scale(1.05);
+        box-shadow: 0px 40px 100px rgba(0, 102, 255, 0.4);
+        filter: saturate(2) contrast(110%);
+        z-index: 10;
+    }
+
+    .wrap-effect-3 .gallery-item:hover {
+        flex: 7;
+        animation: rotate-kinetic 0.7s ease-in-out both;
+    }
+
+    .wrap-effect-4 .gallery-item:hover {
+        flex: 7;
+        box-shadow: 0px 30px 60px rgba(0, 0, 0, 0.5);
+        filter: saturate(1.8) contrast(115%);
+    }
+}
+
+/* Kinetic Animation for Effect 3 */
+@keyframes rotate-kinetic {
+    0% { transform: rotate(0deg); }
+    25% { transform: rotate(2deg); }
+    50% { transform: rotate(-2deg); }
+    75% { transform: rotate(1deg); }
+    100% { transform: rotate(0deg); }
+}
+
+/* Final Inspire Slide */
+.inspire-slide {
+    text-align: center;
+    border: 1px solid rgba(255,255,255,0.1);
+    padding: 60px;
+    border-radius: 40px;
+    background: #050505;
+}
+
+.inspire-button {
+    font-family: monospace;
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.2);
+    padding: 16px 40px;
+    border-radius: 10px;
+    transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+    position: relative;
+    overflow: hidden;
+    text-decoration: none;
+    letter-spacing: 0.2em;
+}
+
+.inspire-button:hover {
+    background: #0066ff;
+    border-color: transparent;
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0, 102, 255, 0.3);
+}
+
+@media (max-width: 1024px) {
+    .gallery-container { height: 50vh; }
+    .gallery-wrap { gap: 8px; }
+    .gallery-item:hover { flex: 4; }
+}
+
+@media (max-width: 767px) {
+    .gallery-container { height: auto !important; }
+    .gallery-wrap { 
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 8px !important;
+        height: auto !important;
+    }
+    .gallery-item { 
+        flex: none !important; 
+        height: 180px !important; 
+        width: 100% !important;
+        filter: brightness(1) grayscale(0) !important;
+        transform: none !important;
+        box-shadow: none !important;
+        border-radius: 12px !important;
+        margin-bottom: 0;
+    }
+    .gallery-item:hover { 
+        flex: none !important; 
+        height: 180px !important;
+        filter: brightness(1) grayscale(0) !important;
+        transform: none !important;
+        box-shadow: none !important;
+    }
+}
