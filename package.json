@@ -5,7 +5,8 @@
   "main": "dist/server.js",
   "scripts": {
     "dev": "nodemon src/server.ts",
-    "build": "eslint src/ && tsc",
+    "build": "tsc",
+    "build:full": "eslint src/ && tsc",
     "start": "node dist/server.js",
     "migrate": "npx sequelize-cli db:migrate",
     "reset:db": "npx sequelize-cli db:migrate:undo:all",
