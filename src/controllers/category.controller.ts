@@ -89,8 +89,10 @@ const createCategory = async (req: Request, res: Response, next: NextFunction) =
             return next(new HttpException(400, "Name is required."));
         }
 
+        /* Commented out as requested
         const applications = parseJsonField<string[]>(req.body.applications, []);
         const materialGrades = parseJsonField<MaterialGradeInput[]>(req.body.material_grades, []);
+        */
         const process = normalizeTextListField(req.body.process);
         const surface_finish = normalizeTextListField(req.body.surface_finish);
 
@@ -100,11 +102,12 @@ const createCategory = async (req: Request, res: Response, next: NextFunction) =
                 description: description ?? null,
                 process,
                 surface_finish,
-                applications,
+                applications: [], // applications,
             },
             transaction,
         );
 
+        /* Commented out as requested
         const gradeRows = materialGrades
             .filter((item) => item && item.grade)
             .map((item, index) => ({
@@ -117,6 +120,7 @@ const createCategory = async (req: Request, res: Response, next: NextFunction) =
             }));
 
         await categoryRepository.bulkCreateMaterialGrades(gradeRows, transaction);
+        */
 
         const files = getFilesFromRequest(req);
         if (files.length > 0) {
@@ -187,9 +191,11 @@ const updateCategory = async (req: Request, res: Response, next: NextFunction) =
             updates.description = description ? description : null;
         }
 
+        /* Commented out as requested
         if (Object.prototype.hasOwnProperty.call(req.body, "applications")) {
             updates.applications = parseJsonField<string[]>(req.body.applications, []);
         }
+        */
 
         if (Object.prototype.hasOwnProperty.call(req.body, "process")) {
             updates.process = normalizeTextListField(req.body.process);
@@ -204,6 +210,7 @@ const updateCategory = async (req: Request, res: Response, next: NextFunction) =
             await categoryRepository.updateCategoryById(id, updates, transaction);
         }
 
+        /* Commented out as requested
         if (Object.prototype.hasOwnProperty.call(req.body, "material_grades")) {
             const materialGrades = parseJsonField<MaterialGradeInput[]>(req.body.material_grades, []);
 
@@ -222,6 +229,7 @@ const updateCategory = async (req: Request, res: Response, next: NextFunction) =
 
             await categoryRepository.bulkCreateMaterialGrades(gradeRows, transaction);
         }
+        */
 
         const deletedImages = parseJsonField<string[]>(req.body.deleted_images, []);
         if (deletedImages.length > 0) {
