@@ -152,6 +152,8 @@ const getTransporter = async () => {
             user: smtpUser,
             pass: smtpPass,
         },
+        // Force IPv4 if needed (helps with 'Network is unreachable' on IPv6)
+        family: 4,
     });
 
     return cachedTransporter;
