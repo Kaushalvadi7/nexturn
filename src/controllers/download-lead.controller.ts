@@ -1,8 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import HttpException from "../exceptions/HttpException";
-import emailService from "../services/email.service";
-import logger from "../utils/logger";
 import companyStatRepository from "../repository/company-stat.repository";
+import companyProfileDownloadRepository from "../repository/company-profile-download.repository";
 
 const isValidEmail = (value?: string) => {
     const email = String(value || "").trim();
@@ -32,25 +31,79 @@ const createDownloadLead = async (req: Request, res: Response, next: NextFunctio
             return next(new HttpException(400, "asset must be 'catalogue' or 'company_profile'."));
         }
 
-        // Send email in background so API response is not blocked by SMTP latency.
-        void emailService
-            .sendDownloadLeadNotification(
-                {
-                    name: String(name).trim(),
-                    email: String(email).trim(),
-                    asset: asset as "catalogue" | "company_profile",
-                },
-                {
-                    ip: req.ip,
-                    userAgent: req.headers["user-agent"],
-                    referer: req.headers.referer,
-                },
-            )
-            .catch((error) => {
-                logger.error("Failed to send download lead notification email", { error });
+        if (asset === "company_profile") {
+            await companyProfileDownloadRepository.createCompanyProfileDownload({
+                name: String(name).trim(),
+                email: String(email).trim(),
+                created_at: new Date(),
             });
+        }
 
         return res.status(201).json({ message: "Download lead captured" });
+    } catch (error) {
+        return next(error as Error);
+    }
+};
+
+const parsePositiveInt = (value: string | undefined, fallback: number) => {
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed) || parsed <= 0) return fallback;
+    return Math.floor(parsed);
+};
+
+const parseDateAtDayStart = (value?: string) => {
+    if (!value) return null;
+    const parsed = new Date(`${value}T00:00:00.000Z`);
+    if (Number.isNaN(parsed.getTime())) return null;
+    return parsed;
+};
+
+const parseDateAtDayEnd = (value?: string) => {
+    if (!value) return null;
+    const parsed = new Date(`${value}T23:59:59.999Z`);
+    if (Number.isNaN(parsed.getTime())) return null;
+    return parsed;
+};
+
+const getCompanyProfileDownloads = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const page = parsePositiveInt(String(req.query.page || ""), 1);
+        const limit = Math.min(parsePositiveInt(String(req.query.limit || ""), 50), 100);
+
+        const email = String(req.query.email || "").trim();
+        const startDateRaw = String(req.query.startDate || "").trim();
+        const endDateRaw = String(req.query.endDate || "").trim();
+
+        const startDate = parseDateAtDayStart(startDateRaw || undefined);
+        const endDate = parseDateAtDayEnd(endDateRaw || undefined);
+
+        if (startDateRaw && !startDate) {
+            return next(new HttpException(400, "Invalid startDate. Use YYYY-MM-DD format."));
+        }
+        if (endDateRaw && !endDate) {
+            return next(new HttpException(400, "Invalid endDate. Use YYYY-MM-DD format."));
+        }
+        if (startDate && endDate && startDate > endDate) {
+            return next(new HttpException(400, "startDate cannot be after endDate."));
+        }
+
+        const { rows, count } = await companyProfileDownloadRepository.findCompanyProfileDownloads({
+            email: email || undefined,
+            startDate: startDate || undefined,
+            endDate: endDate || undefined,
+            page,
+            limit,
+        });
+
+        return res.status(200).json({
+            data: rows.map((item) => item.toJSON()),
+            pagination: {
+                page,
+                limit,
+                total: count,
+                totalPages: Math.ceil(count / limit),
+            },
+        });
     } catch (error) {
         return next(error as Error);
     }
@@ -87,4 +140,4 @@ const downloadAsset = async (req: Request, res: Response, next: NextFunction) =>
     }
 };
 
-export default { createDownloadLead, downloadAsset };
+export default { createDownloadLead, downloadAsset, getCompanyProfileDownloads };

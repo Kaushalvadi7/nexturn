@@ -120,46 +120,6 @@ const renderInquiryCreatedEmail = async (data: {
     });
 };
 
-const renderDownloadLeadEmail = async (data: {
-    assetLabel: string;
-    actionText: string;
-    name: string;
-    email: string;
-    // environment?: string;
-    ip?: string;
-    userAgent?: string;
-    referer?: string;
-    includeMeta?: boolean;
-}) => {
-    const leadTemplate = await loadTemplate("download-lead.html");
-    const includeMeta = Boolean(data.includeMeta);
-    const rows = [
-        detailRow("Name", data.name),
-        detailRow("Email", data.email),
-        // includeMeta && data.environment ? detailRow("Environment", data.environment) : "",
-        includeMeta && data.ip ? detailRow("IP", data.ip) : "",
-        includeMeta && data.userAgent ? detailRow("User Agent", data.userAgent) : "",
-        includeMeta && data.referer ? detailRow("Referer", data.referer) : "",
-    ]
-        .filter(Boolean)
-        .join("");
-
-    const content = renderTokens(leadTemplate, {
-        ASSET: escapeHtml(data.assetLabel),
-        ACTION_TEXT: escapeHtml(data.actionText),
-        DETAIL_ROWS: rows,
-    });
-
-    return renderBase({
-        title: `Download: ${data.assetLabel} (${data.email})`,
-        header: "New Download Lead Captured",
-        subheader: "A visitor shared details before downloading a file.",
-        summaryBadge: "",
-        content,
-    });
-};
-
 export default {
     renderInquiryCreatedEmail,
-    renderDownloadLeadEmail,
 };

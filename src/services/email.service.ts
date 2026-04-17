@@ -15,18 +15,6 @@ type InquiryNotificationInput = {
     created_at?: Date | string | null;
 };
 
-type DownloadLeadNotificationInput = {
-    name: string;
-    email: string;
-    asset: "catalogue" | "company_profile";
-};
-
-type DownloadLeadNotificationMeta = {
-    ip?: string;
-    userAgent?: string;
-    referer?: string;
-};
-
 const parseBoolean = (value?: string) => {
     if (!value) return undefined;
     const normalized = value.trim().toLowerCase();
@@ -213,58 +201,4 @@ const sendInquiryCreatedNotification = async (inquiry: InquiryNotificationInput,
     });
 };
 
-const sendDownloadLeadNotification = async (lead: DownloadLeadNotificationInput, meta: DownloadLeadNotificationMeta = {}) => {
-    const transporter = await getTransporter();
-    if (!transporter) return;
-
-    const to = await resolveNotificationRecipients();
-    if (to.length === 0) {
-        return;
-    }
-
-    const from = clean(SMTP_FROM) || clean(SMTP_USER);
-    if (!from) {
-        logger.warn("Email notifications disabled (SMTP_FROM/SMTP_USER missing).");
-        return;
-    }
-
-    const assetLabel = lead.asset === "company_profile" ? "Company Profile" : "Catalogue";
-    const isCompanyProfile = lead.asset === "company_profile";
-    const subject = isCompanyProfile ? `Company profile viewed/downloaded (${lead.email})` : `Download: ${assetLabel} (${lead.email})`;
-
-    const lines = isCompanyProfile
-        ? ["Someone just viewed or downloaded the company's profile.", `Name: ${lead.name}`, `Email: ${lead.email}`].filter(Boolean)
-        : [
-              //   `Environment: ${NODE_ENV || "development"}`,
-              `Asset: ${assetLabel}`,
-              `Name: ${lead.name}`,
-              `Email: ${lead.email}`,
-              meta.ip ? `IP: ${meta.ip}` : null,
-              meta.userAgent ? `User-Agent: ${meta.userAgent}` : null,
-              meta.referer ? `Referer: ${meta.referer}` : null,
-          ].filter(Boolean);
-
-    const html = await emailTemplateService.renderDownloadLeadEmail({
-        assetLabel,
-        actionText: isCompanyProfile
-            ? "Someone just viewed or downloaded the company's profile."
-            : "A visitor shared details before downloading a file.",
-        name: lead.name,
-        email: lead.email,
-        // environment: NODE_ENV || "development",
-        ip: meta.ip,
-        userAgent: meta.userAgent,
-        referer: meta.referer,
-        includeMeta: !isCompanyProfile,
-    });
-
-    await transporter.sendMail({
-        from,
-        to,
-        subject,
-        text: lines.join("\n"),
-        html,
-    });
-};
-
-export default { sendInquiryCreatedNotification, sendDownloadLeadNotification };
+export default { sendInquiryCreatedNotification };

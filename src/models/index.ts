@@ -6,6 +6,7 @@ import Category from "./Category";
 import ClientSuccessStory from "./ClientSuccessStory";
 import ClientProblemSolving from "./ClientProblemSolving";
 import CompanyEmployee from "./CompanyEmployee";
+import CompanyProfileDownload from "./CompanyProfileDownload";
 import CompanyStat from "./CompanyStat";
 import Image from "./Image";
 import Inquiry from "./Inquiry";
@@ -47,6 +48,7 @@ db.addModels([
     ClientSuccessStory,
     ClientProblemSolving,
     CompanyEmployee,
+    CompanyProfileDownload,
     CompanyStat,
     Image,
     Inquiry,
