@@ -18,8 +18,10 @@ import InspectionEquipmentRoute from "./routes/inspection-equipment.route";
 import CompanyStatRoute from "./routes/company-stat.route";
 import ManufacturingFacalityRoute from "./routes/manufacturing-facality.route";
 import DownloadLeadRoute from "./routes/download-lead.route";
+import PingRoute from "./routes/ping.route";
 
 const appServer = new App([
+    new PingRoute(),
     new ImageRoute(),
     new AuthRoute(),
     new CategoryRoute(),
