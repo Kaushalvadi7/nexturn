@@ -3,6 +3,7 @@ import db from "../models";
 import HttpException from "../exceptions/HttpException";
 import companyEmployeeRepository from "../repository/company-employee.repository";
 import imageService from "../services/image.service";
+import { normalizeCountryName } from "../utils/country.utils";
 
 const getFilesFromRequest = (req: Request) => {
     const files: Express.Multer.File[] = [];
@@ -28,6 +29,7 @@ type CompanyEmployeeInput = {
     role?: string;
     education?: string | null;
     experience?: string | null;
+    country_representative?: string | null;
 };
 
 const getAllCompanyEmployees = async (_req: Request, res: Response, next: NextFunction) => {
@@ -67,7 +69,8 @@ const getAllCompanyEmployees = async (_req: Request, res: Response, next: NextFu
 const createCompanyEmployee = async (req: Request, res: Response, next: NextFunction) => {
     const transaction = await db.transaction();
     try {
-        const { name, role, education, experience } = req.body as CompanyEmployeeInput;
+        const { name, role, education, experience, country_representative } =
+            req.body as CompanyEmployeeInput;
 
         if (!name || !name.trim()) {
             await transaction.rollback();
@@ -79,12 +82,25 @@ const createCompanyEmployee = async (req: Request, res: Response, next: NextFunc
             return next(new HttpException(400, "role is required."));
         }
 
+        // Validate and normalize country if provided
+        let normalizedCountry: string | null = null;
+        if (country_representative !== undefined && country_representative !== null) {
+            normalizedCountry = normalizeCountryName(country_representative);
+            if (!normalizedCountry) {
+                await transaction.rollback();
+                return next(
+                    new HttpException(400, "Invalid country name provided."),
+                );
+            }
+        }
+
         const employee = await companyEmployeeRepository.createCompanyEmployee(
             {
                 name: name.trim(),
                 role: role.trim(),
                 education: education?.trim() || null,
                 experience: experience?.trim() || null,
+                country_representative: normalizedCountry,
             },
             transaction,
         );
@@ -144,8 +160,25 @@ const updateCompanyEmployee = async (req: Request, res: Response, next: NextFunc
             role?: string;
             education?: string | null;
             experience?: string | null;
+            country_representative?: string | null;
             updated_at?: Date;
         } = {};
+
+        // Handle country_representative validation and normalization
+        if (Object.prototype.hasOwnProperty.call(body, "country_representative")) {
+            const rawCountry = body.country_representative;
+            let normalizedCountry: string | null = null;
+            if (rawCountry && rawCountry.trim()) {
+                normalizedCountry = normalizeCountryName(rawCountry);
+                if (!normalizedCountry) {
+                    await transaction.rollback();
+                    return next(
+                        new HttpException(400, "Invalid country name provided."),
+                    );
+                }
+            }
+            updates.country_representative = normalizedCountry;
+        }
 
         if (Object.prototype.hasOwnProperty.call(body, "name")) {
             if (!body.name || !body.name.trim()) {

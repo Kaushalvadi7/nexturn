@@ -7,6 +7,7 @@ type CreateCompanyEmployeeInput = {
     role: string;
     education?: string | null;
     experience?: string | null;
+    country_representative?: string | null;
 };
 
 type UpdateCompanyEmployeeInput = Partial<CreateCompanyEmployeeInput> & {

@@ -19,6 +19,9 @@ export default class CompanyEmployee extends Model {
     @Column(DataType.TEXT)
     declare experience: string | null;
 
+    @Column({ type: DataType.STRING(255), allowNull: true })
+    declare country_representative: string | null;
+
     @Column(DataType.DATE)
     declare created_at: Date | null;
 
